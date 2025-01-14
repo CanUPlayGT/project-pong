@@ -1,6 +1,7 @@
 #include <game.h>
 #include <SDL.h>
 
+
 Game::Game(SDL_Window **window, SDL_Renderer **renderer, int x, int y, int w, int h, Uint32 flags){
 	*window = SDL_CreateWindow("Window",  x,  y, w, h, flags);
     *renderer = SDL_CreateRenderer(*window, -1, SDL_RENDERER_ACCELERATED);

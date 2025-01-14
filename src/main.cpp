@@ -2,7 +2,8 @@
 #include <iostream>
 #include <unordered_set>
 
-#include <game.h>
+#include "game.h"
+#include "paddle.h"
 
 const int WINSIZE_WIDTH = 800;
 const int WINSIZE_HEIGHT = 600;
@@ -11,57 +12,56 @@ const int FRAME_TIME = 1000/FPS;
 
 using std::cout, std::endl;
 
-class paddle{
-    public: 
+class ball_class{
+    public:
         SDL_Rect rect;
-        bool move_up = false;
-        bool move_down = false;
-        int speed = 6;
-        SDL_Renderer* renderer;
+        int speed_x = 0;
+        int speed_y = 0;
+        SDL_Renderer *renderer;
+        int ResetPosition_x = WINSIZE_WIDTH/2 - rect.w/2;
+        int ResetPosition_y = WINSIZE_HEIGHT/2 - rect.h/2;
 
-        paddle(SDL_Renderer* renderer) : renderer(renderer){
-            rect.w = 8;
-            rect.h = 100;
-            rect.y = WINSIZE_HEIGHT/2 - rect.h/2;
-            rect.x = 0;
-        }
-
-        void UpdatePos(){
-            if ( move_up == true ) {
-                rect.y -= speed;
-            }
-            if ( move_down == true ) {
-                rect.y += speed;
-            }
-
-            CheckBorderCollision();
+        ball_class(SDL_Renderer* renderer) : renderer(renderer){
+            rect.w = 10;
+            rect.h = 10;
+            rect.y = ResetPosition_y;
+            rect.x = ResetPosition_x;
         }
 
         void CheckBorderCollision(){
-            if(rect.y < 0){
-                rect.y = 0;
-            }
             if(rect.y + rect.h > WINSIZE_HEIGHT){
-                rect.y -= speed;
+                speed_y *= -1;
+            }
+            if(rect.y < 0){
+                speed_y *= -1;
+            }
+            if(rect.x + rect.h > WINSIZE_WIDTH){
+                //speed_x *= -1;
+                rect.x = ResetPosition_x;
+                rect.y = ResetPosition_y;
+
+            }
+            if(rect.x < 0){
+                //speed_x *= -1;
+                rect.x = ResetPosition_x;
+                rect.y = ResetPosition_y;
             }
         }
 
         void rend(){
-
-            cout << "paddle rendering " << endl;
-
             if(SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255) != 0){
-                cout << SDL_GetError() << endl;
+                std::cout << SDL_GetError() << std::endl;
             }
             
             if(SDL_RenderFillRect(renderer, &rect) != 0){
-                cout << SDL_GetError() << endl;
+                std::cout << SDL_GetError() << std::endl;
             }
-
-            cout << "rendered successfully" << endl;
         }
+        
+
 };
 
+int CheckCollision(SDL_Rect *Rect1, SDL_Rect *Rect2);
 
 int main(int argc, char *args[]){
     SDL_Window *window;
@@ -86,6 +86,10 @@ int main(int argc, char *args[]){
     paddle paddle2(renderer);
     paddle2.rect.x = (WINSIZE_WIDTH - paddle2.rect.w) - 20;
 
+    ball_class ball(renderer);
+    ball.speed_x = -8;
+    ball.speed_y = 8;
+
     //cout << "point 4" << endl;
 
     while(game.GetState() == GAMESTATE::PLAY){
@@ -94,7 +98,7 @@ int main(int argc, char *args[]){
         SDL_Event event;
         while(SDL_PollEvent(&event)){
             if(event.type == SDL_QUIT){
-                std::cout << "game loop set false";
+                std::cout << "\ngame loop set false";
                 game.SetState(GAMESTATE::EXIT);
             }
             else if(event.type == SDL_KEYDOWN){
@@ -143,6 +147,17 @@ int main(int argc, char *args[]){
 
         paddle1.UpdatePos();
         paddle2.UpdatePos();
+        ball.rect.x += ball.speed_x;
+        ball.rect.y += ball.speed_y;
+
+        ball.CheckBorderCollision();
+
+        if(CheckCollision(&paddle1.rect, &ball.rect)){
+            ball.speed_x *= -1;
+        }
+        if(CheckCollision(&paddle2.rect, &ball.rect)){
+            ball.speed_x *= -1;
+        }
 
         //cout << "point 6" << endl;
 
@@ -151,6 +166,7 @@ int main(int argc, char *args[]){
 
         paddle1.rend();
         paddle2.rend();
+        ball.rend();
 
         //cout << "point 7" << endl;
 
@@ -172,4 +188,34 @@ int main(int argc, char *args[]){
     return 0;
 }
 
+int CheckCollision(SDL_Rect *Rect1, SDL_Rect *Rect2){
+    //rect1
+    int rect1_top = Rect1->y;
+    int rect1_down = Rect1->y + Rect1->h;
+    int rect1_right = Rect1->x + Rect1->w;
+    int rect1_left = Rect1->x;
+
+    //rect2
+    int rect2_top = Rect2->y;
+    int rect2_down = Rect2->y + Rect2->h;
+    int rect2_right = Rect2->x + Rect2->w;
+    int rect2_left = Rect2->x;
+
+    if (rect2_right < rect1_left) {
+        return false;
+    }
+    if (rect2_left > rect1_right) {
+        return false;
+    }
+    if (rect2_top > rect1_down) {
+        return false;
+    }
+    if (rect2_down < rect1_top) {
+        return false;
+    }
+
+    cout << "collision set true" << endl;
+    return true;
+
+}
 
