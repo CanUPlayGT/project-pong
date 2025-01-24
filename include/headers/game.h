@@ -7,7 +7,7 @@
 extern const int WINSIZE_WIDTH;
 extern const int WINSIZE_HEIGHT;
 
-enum class GAMESTATE{PLAY, EXIT};
+enum class GAMESTATE{PLAY, EXIT, PAUSE};
 
 class Game{
     public:

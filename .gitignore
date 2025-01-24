@@ -2,3 +2,6 @@ lib
 .vs
 .vscode
 pong.exe
+"why i dont understand.png"
+SDL2.dll
+SDL2_ttf.dll

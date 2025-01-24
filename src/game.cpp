@@ -14,7 +14,7 @@ Game::Game(SDL_Window **window, SDL_Renderer **renderer, int x, int y, int w, in
 }
 
 void Game::initialize(){
-	_state = GAMESTATE::PLAY;
+	_state = GAMESTATE::PAUSE;
 
 	if(SDL_Init(SDL_INIT_VIDEO||SDL_INIT_AUDIO) != 0){
 		std::cout << "SDL Initializations Failed: " << SDL_GetError() << std::endl;
