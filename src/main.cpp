@@ -32,7 +32,7 @@ class ball_class{
             rect.x = ResetPosition_x;
         }
 
-        void CheckBorderCollision(){
+        int CheckBorderCollision(){
             if(rect.y + rect.h > WINSIZE_HEIGHT){
                 speed_y *= -1;
             }
@@ -43,13 +43,16 @@ class ball_class{
                 //speed_x *= -1;
                 rect.x = ResetPosition_x;
                 rect.y = ResetPosition_y;
-
+                return 1;
             }
             if(rect.x < 0){
                 //speed_x *= -1;
                 rect.x = ResetPosition_x;
                 rect.y = ResetPosition_y;
+                return 1;
             }
+
+            return 0;
         }
 
         void rend(){
@@ -91,8 +94,8 @@ int main(int argc, char *args[]){
     paddle2.rect.x = (WINSIZE_WIDTH - paddle2.rect.w) - 20;
 
     ball_class ball(renderer);
-    ball.speed_x = -4;
-    ball.speed_y = 4;
+
+    srand(time(NULL));
 
     bool running = true;
     //cout << "point 4" << endl;
@@ -109,7 +112,7 @@ int main(int argc, char *args[]){
             while(SDL_PollEvent(&event)){
                 if(event.type == SDL_QUIT){
                     std::cout << "\ngame loop set false";
-                    running = false;;
+                    game.SetState(GAMESTATE::EXIT);
                 }
                 else if(event.type == SDL_KEYDOWN){
                     switch(event.key.keysym.sym){
@@ -147,14 +150,18 @@ int main(int argc, char *args[]){
             paddle1.rend();
             paddle2.rend();
             ball.rend();
-            cout << ball.rect.x << " " << ball.rect.y << endl;
+            // cout << ball.rect.x << " " << ball.rect.y << endl;
             SDL_RenderPresent(renderer);
             
         }
 
         //cout << "point 5" << endl;
+        ball.speed_x = 6 * (rand() % 2 == 0 ? 1 : -1);
+        ball.speed_y = 6 * (rand() % 2 == 0 ? 1 : -1);
         
         while(game.GetState() == GAMESTATE::PLAY){
+
+
             while(SDL_PollEvent(&event)){
                 if(event.type == SDL_QUIT){
                     std::cout << "\ngame loop set false";
@@ -209,7 +216,9 @@ int main(int argc, char *args[]){
             ball.rect.x += ball.speed_x;
             ball.rect.y += ball.speed_y;
 
-            ball.CheckBorderCollision();
+            if(ball.CheckBorderCollision()){
+                game.SetState(GAMESTATE::PAUSE);
+            }
 
             if(CheckCollision(&paddle1.rect, &ball.rect)){
                 ball.speed_x *= -1;
