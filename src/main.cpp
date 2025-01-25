@@ -217,17 +217,17 @@ int main(int argc, char *args[]){
 
             if(ball.CheckBorderCollision()){
                 game.SetState(GAMESTATE::PAUSE);
-                paddle1.reset_position_y();
-                paddle2.reset_position_y();
+                paddle1.reset();
+                paddle2.reset();
 
             }
 
             if(CheckRectCollision(&paddle1.rect, &ball.rect)){
-                ball.rect.x -= ball.speed_x;
+                ball.rect.x = paddle1.rect.x + paddle1.rect.w;
                 ball.speed_x *= -1;
             }
             if(CheckRectCollision(&paddle2.rect, &ball.rect)){
-                ball.rect.x -= ball.speed_x;
+                ball.rect.x = paddle2.rect.x - ball.rect.w;
                 ball.speed_x *= -1;
             }
 
@@ -265,10 +265,8 @@ int main(int argc, char *args[]){
 
 /*
 TODO:
-1. fix paddle 2 moving bug in play game state
-2. add computer AI
-3. make ball faster as time passes 
-4. fix ball colliding with paddle edge bug
-5. track and display scores
-6. improve ball's bouncing logic (hard)
+1. add computer AI
+2. make ball faster as time passes 
+3. track and display scores
+4. improve ball's bouncing logic (hard)
 */

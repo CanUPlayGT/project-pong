@@ -10,14 +10,14 @@ class paddle{
         bool move_up = false;
         bool move_down = false;
         int speed = 6;
-        int res_y_pos;
+        int reset_position_y;
         SDL_Renderer* renderer;
 
         paddle(SDL_Renderer* renderer);
 
         void UpdatePos();
 
-        void reset_position_y();
+        void reset();
 
         void CheckBorderCollision();
 

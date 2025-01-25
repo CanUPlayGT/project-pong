@@ -4,8 +4,8 @@
 paddle::paddle(SDL_Renderer* renderer) : renderer(renderer){
     rect.w = 8;
     rect.h = 100;
-    res_y_pos = WINSIZE_HEIGHT/2 - rect.h/2;
-    reset_position_y();
+    reset_position_y = WINSIZE_HEIGHT/2 - rect.h/2;
+    reset();
     rect.x = 0;
 }
 
@@ -29,8 +29,10 @@ void paddle::CheckBorderCollision(){
     }
 }
 
-void paddle::reset_position_y(){
-    rect.y = res_y_pos;
+void paddle::reset(){
+    rect.y = reset_position_y;
+    move_down = false;
+    move_up = false;
 }
 
 void paddle::rend(){
