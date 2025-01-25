@@ -62,13 +62,11 @@ class ball_class{
             
             if(SDL_RenderFillRect(renderer, &rect) != 0){
                 std::cout << SDL_GetError() << std::endl;
-            }
+            } 
         }
         
 
 };
-
-int CheckCollision(SDL_Rect *Rect1, SDL_Rect *Rect2);
 
 int main(int argc, char *args[]){
     SDL_Window *window;
@@ -213,17 +211,23 @@ int main(int argc, char *args[]){
 
             paddle1.UpdatePos();
             paddle2.UpdatePos();
+
             ball.rect.x += ball.speed_x;
             ball.rect.y += ball.speed_y;
 
             if(ball.CheckBorderCollision()){
                 game.SetState(GAMESTATE::PAUSE);
+                paddle1.reset_position_y();
+                paddle2.reset_position_y();
+
             }
 
-            if(CheckCollision(&paddle1.rect, &ball.rect)){
+            if(CheckRectCollision(&paddle1.rect, &ball.rect)){
+                ball.rect.x -= ball.speed_x;
                 ball.speed_x *= -1;
             }
-            if(CheckCollision(&paddle2.rect, &ball.rect)){
+            if(CheckRectCollision(&paddle2.rect, &ball.rect)){
+                ball.rect.x -= ball.speed_x;
                 ball.speed_x *= -1;
             }
 
@@ -259,34 +263,12 @@ int main(int argc, char *args[]){
     return 0;
 }
 
-int CheckCollision(SDL_Rect *Rect1, SDL_Rect *Rect2){
-    //rect1
-    int rect1_top = Rect1->y;
-    int rect1_down = Rect1->y + Rect1->h;
-    int rect1_right = Rect1->x + Rect1->w;
-    int rect1_left = Rect1->x;
-
-    //rect2
-    int rect2_top = Rect2->y;
-    int rect2_down = Rect2->y + Rect2->h;
-    int rect2_right = Rect2->x + Rect2->w;
-    int rect2_left = Rect2->x;
-
-    if (rect2_right < rect1_left) {
-        return false;
-    }
-    if (rect2_left > rect1_right) {
-        return false;
-    }
-    if (rect2_top > rect1_down) {
-        return false;
-    }
-    if (rect2_down < rect1_top) {
-        return false;
-    }
-
-    cout << "collision set true" << endl;
-    return true;
-
-}
-
+/*
+TODO:
+1. fix paddle 2 moving bug in play game state
+2. add computer AI
+3. make ball faster as time passes 
+4. fix ball colliding with paddle edge bug
+5. track and display scores
+6. improve ball's bouncing logic (hard)
+*/

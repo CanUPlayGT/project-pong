@@ -24,3 +24,5 @@ class Game{
     GAMESTATE _state;
 };
 
+int CheckRectCollision(SDL_Rect *Rect1, SDL_Rect *Rect2);
+

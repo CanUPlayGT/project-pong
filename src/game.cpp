@@ -39,3 +39,34 @@ Game::~Game(){
 	SDL_DestroyRenderer(renderer);
 	SDL_DestroyWindow(window);
 }
+
+//i move this function here so that i have reusable code
+int CheckRectCollision(SDL_Rect *Rect1, SDL_Rect *Rect2){
+    //rect1
+    int rect1_top = Rect1->y;
+    int rect1_down = Rect1->y + Rect1->h;
+    int rect1_right = Rect1->x + Rect1->w;
+    int rect1_left = Rect1->x;
+
+    //rect2
+    int rect2_top = Rect2->y;
+    int rect2_down = Rect2->y + Rect2->h;
+    int rect2_right = Rect2->x + Rect2->w;
+    int rect2_left = Rect2->x;
+
+    if (rect2_right < rect1_left) {
+        return false;
+    }
+    if (rect2_left > rect1_right) {
+        return false;
+    }
+    if (rect2_top > rect1_down) {
+        return false;
+    }
+    if (rect2_down < rect1_top) {
+        return false;
+    }
+
+    return true;
+
+}
