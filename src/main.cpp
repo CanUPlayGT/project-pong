@@ -15,8 +15,8 @@ using std::cout, std::endl;
 class ball_class{
     public:
         SDL_Rect rect;
-        int velocity_x = 0;
-        int velocity_y = 0;
+        float velocity_x = 0;
+        float velocity_y = 0;
         int speed = 6;
         SDL_Renderer *renderer;
         int ResetPosition_x = WINSIZE_WIDTH/2 - rect.w/2;
@@ -126,12 +126,12 @@ int main(int argc, char *args[]){
                     switch(event.key.keysym.sym){
                         case SDLK_a :
                             paddle1.move_up = true;
-                            cout << "paddle1 move up set true";
+                            // cout << "paddle1 move up set true";
                             game.SetState(GAMESTATE::PLAY);
                             break;
                         case SDLK_d :
                              paddle1.move_down = true;
-                            cout << "paddle1 move down set true";
+                            // cout << "paddle1 move down set true";
                             game.SetState(GAMESTATE::PLAY);
                             break;
                     }
@@ -140,12 +140,12 @@ int main(int argc, char *args[]){
                     switch(event.key.keysym.sym){
                         case SDLK_a :
                             paddle1.move_up = false;
-                            cout << "paddle1 move up set true";
+                            // cout << "paddle1 move up set true";
                             game.SetState(GAMESTATE::PLAY);
                             break;
                         case SDLK_d :
                              paddle1.move_down = false;
-                            cout << "paddle1 move down set true";
+                            // cout << "paddle1 move down set true";
                             game.SetState(GAMESTATE::PLAY);
                             break;
                     }
@@ -249,8 +249,8 @@ int main(int argc, char *args[]){
                 paddle1.reset();
                 paddle2.reset();
 
-                cout << "paddle 1 score: " << paddle1.score << "\n";
-                cout << "paddle 2 score: " << paddle2.score << "\n";
+                cout << "paddle1 score: " << paddle1.score << "\n";
+                cout << "paddle2 score: " << paddle2.score << "\n";
             }
 
             //paddle collision
@@ -271,14 +271,19 @@ int main(int argc, char *args[]){
 
 
             //make the ball goes faster
-            // if(hitcount < 20){
-            //     if(hitcount > 0 && hitcount % 5 == 0){
-            //         hitcount = 0;
-            //         ball.velocity_x += 2;
-            //         ball.velocity_y += 2;
-            //         cout << "ball speed: " << ball.speed << endl;
-            //      }
-            // }
+            if(ball.velocity_x < 10){
+                if(hitcount > 0 && hitcount % 5 == 0){
+                    //i wanted to continue counting the ball hit but then the if statement would
+                    //just trigger more than one time
+                    hitcount = 0;
+
+                    /*because we were working with velocity so i can't just add it by a number because the 
+                    velocity could be a negative so it could be more slower e.g (-6 + 2) so i made a workaround*/
+                    ball.velocity_x += ball.velocity_x * 0.05;
+                    ball.velocity_y += ball.velocity_x * 0.05;
+                    cout << "ball velocity: " << ball.velocity_x << endl;
+                 }
+            }
 
             //computer movement
             if(!player_vs_player){
@@ -337,7 +342,7 @@ int main(int argc, char *args[]){
 /*
 TODO:
 1. add computer AI (DONE)
-2. make ball faster as time passes 
+2. make ball faster as time passes (DONE)
 3. track and display scores
 4. improve ball's bouncing logic (hard)
 */
