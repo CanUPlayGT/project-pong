@@ -12,6 +12,7 @@ class paddle{
         int speed = 6;
         int reset_position_y;
         SDL_Renderer* renderer;
+        int score = 0;
 
         paddle(SDL_Renderer* renderer);
 

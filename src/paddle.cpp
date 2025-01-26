@@ -31,6 +31,8 @@ void paddle::CheckBorderCollision(){
 
 void paddle::reset(){
     rect.y = reset_position_y;
+
+    //also reset moving variable
     move_down = false;
     move_up = false;
 }
