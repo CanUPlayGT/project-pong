@@ -1,6 +1,4 @@
 #include <game.h>
-#include <SDL.h>
-
 
 Game::Game(SDL_Window **window, SDL_Renderer **renderer, int x, int y, int w, int h, Uint32 flags){
 	*window = SDL_CreateWindow("Window",  x,  y, w, h, flags);
@@ -22,7 +20,7 @@ void Game::initialize(){
 	}
 
 	if(TTF_Init() != 0){
-		std::cout << "TTF Initializations Failed: " << SDL_GetError() << std::endl;
+		std::cout << "TTF Initializations Failed: " << TTF_GetError() << std::endl;
 		_state = GAMESTATE::EXIT;
 	}
 }
@@ -38,10 +36,12 @@ void Game::SetState(GAMESTATE state){
 Game::~Game(){
 	SDL_DestroyRenderer(renderer);
 	SDL_DestroyWindow(window);
+    TTF_Quit();
 }
 
-//i move this function here so that i have reusable code
+// returns 1 on collision
 int CheckRectCollision(SDL_Rect *Rect1, SDL_Rect *Rect2){
+    //i moved this function here so that i have reusable code
     //rect1
     int rect1_top = Rect1->y;
     int rect1_down = Rect1->y + Rect1->h;
@@ -55,18 +55,18 @@ int CheckRectCollision(SDL_Rect *Rect1, SDL_Rect *Rect2){
     int rect2_left = Rect2->x;
 
     if (rect2_right < rect1_left) {
-        return false;
+        return 0;
     }
     if (rect2_left > rect1_right) {
-        return false;
+        return 0;
     }
     if (rect2_top > rect1_down) {
-        return false;
+        return 0;
     }
     if (rect2_down < rect1_top) {
-        return false;
+        return 0;
     }
 
-    return true;
+    return 1;
 
 }

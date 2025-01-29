@@ -86,18 +86,16 @@ int main(int argc, char *args[]){
 
     //cout << "point 3" << endl;
 
-    paddle paddle1(renderer);
-    paddle1.rect.x = 20;
-
-    paddle paddle2(renderer);
-    paddle2.rect.x = (WINSIZE_WIDTH - paddle2.rect.w) - 20;
+    paddle paddle[2] = {renderer, renderer};
+    paddle[0].rect.x = 20;
+    paddle[1].rect.x = (WINSIZE_WIDTH - paddle[2].rect.w) - 20;
 
     ball_class ball(renderer);
 
     srand(time(NULL));
     bool playerhitball = false;
+    bool player2 = false;
     bool running = true;
-    bool player_vs_player = false;
     int hitcount = 0;
     //cout << "point 4" << endl;
 
@@ -116,6 +114,7 @@ int main(int argc, char *args[]){
 
         //draw game state pause
         while(game.GetState() == GAMESTATE::PAUSE){
+
             // cout << "gamestate = pause" << endl;
             while(SDL_PollEvent(&event)){
                 if(event.type == SDL_QUIT){
@@ -125,12 +124,12 @@ int main(int argc, char *args[]){
                 else if(event.type == SDL_KEYDOWN){
                     switch(event.key.keysym.sym){
                         case SDLK_a :
-                            paddle1.move_up = true;
+                            paddle[0].move_up = true;
                             // cout << "paddle1 move up set true";
                             game.SetState(GAMESTATE::PLAY);
                             break;
                         case SDLK_d :
-                             paddle1.move_down = true;
+                             paddle[0].move_down = true;
                             // cout << "paddle1 move down set true";
                             game.SetState(GAMESTATE::PLAY);
                             break;
@@ -139,20 +138,20 @@ int main(int argc, char *args[]){
                 else if(event.type == SDL_KEYUP){
                     switch(event.key.keysym.sym){
                         case SDLK_a :
-                            paddle1.move_up = false;
+                            paddle[0].move_up = false;
                             // cout << "paddle1 move up set true";
                             game.SetState(GAMESTATE::PLAY);
                             break;
                         case SDLK_d :
-                             paddle1.move_down = false;
+                             paddle[0].move_down = false;
                             // cout << "paddle1 move down set true";
                             game.SetState(GAMESTATE::PLAY);
                             break;
                     }
                 }
             }
-            //reset pvp mode
-            player_vs_player = false;
+            //reset player 2
+            player2 = false;
             //computer should move if the ball goes right first
             playerhitball = true;
             hitcount = 0;
@@ -160,8 +159,10 @@ int main(int argc, char *args[]){
             SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
             SDL_RenderClear(renderer);
 
-            paddle1.rend();
-            paddle2.rend();
+            for (int i = 0; i < 2; i++){
+                paddle[i].rend();
+            }
+
             ball.rend();
             // cout << ball.rect.x << " " << ball.rect.y << endl;
             SDL_RenderPresent(renderer);
@@ -184,40 +185,40 @@ int main(int argc, char *args[]){
                 else if(event.type == SDL_KEYDOWN){
                     switch(event.key.keysym.sym){
                         case SDLK_a :
-                            paddle1.move_up = true;
-                            // cout << "paddle1 move up set true";
+                            paddle[0].move_up = true;
+                            // cout << "paddle[1] move up set true";
                             break;
                         case SDLK_d :
-                            paddle1.move_down = true;
+                            paddle[0].move_down = true;
                             // cout << "paddle1 move down set true";
                             break;
                         case SDLK_j :
-                            paddle2.move_up = true;
-                            // cout << "paddle1 move up set true";
+                            paddle[1].move_up = true;
+                            // cout << "paddle2 move up set true";
                             break;
                         case SDLK_l :
-                            paddle2.move_down = true;
-                            // cout << "paddle1 move down set true";
+                            paddle[1].move_down = true;
+                            // cout << "paddle2 move down set true";
                             break;
                     } 
                 }
                 else if(event.type == SDL_KEYUP){
                     switch(event.key.keysym.sym){
                         case SDLK_a :
-                            paddle1.move_up = false;
+                            paddle[0].move_up = false;
                             // cout << "paddle1 move up set false";
                             break;
                         case SDLK_d :
-                            paddle1.move_down = false;
+                            paddle[0].move_down = false;
                             // cout << "paddle1 move down set false";
                             break;
                         case SDLK_j :
-                            paddle2.move_up = false;
-                            // cout << "paddle1 move up set false";
+                            paddle[1].move_up = false;
+                            // cout << "paddle2 move up set false";
                             break;
                         case SDLK_l :
-                            paddle2.move_down = false;
-                            // cout << "paddle1 move down set false";
+                            paddle[1].move_down = false;
+                            // cout << "paddle2 move down set false";
                             break;
                     }
                 }
@@ -225,12 +226,13 @@ int main(int argc, char *args[]){
             // cout << "gamestate = play" << endl;
             int startframe = SDL_GetTicks();
 
-            if (paddle2.move_down == true || paddle2.move_down == true){
-                player_vs_player = true;
+            if (paddle[1].move_down == true || paddle[1].move_down == true){
+                player2 = true;
             }
 
-            paddle1.UpdatePos();
-            paddle2.UpdatePos();
+            for (int i = 0; i < 2; i++){
+                paddle[i].UpdatePos();
+            }
 
             ball.rect.x += ball.velocity_x;
             ball.rect.y += ball.velocity_y;
@@ -239,36 +241,35 @@ int main(int argc, char *args[]){
             int add_score = ball.CheckBorderCollision();
             if(add_score){
                 if (add_score == 2){
-                    paddle1.score++;
+                    paddle[0].score++;
                 }
                 else if (add_score == 1){
-                    paddle2.score++;
+                    paddle[1].score++;
+                }
+
+                for (int i = 0; i < 2; i++){
+                    paddle[i].reset();
+                    cout << "paddle" << i << " score: " << paddle[i].score << "\n";
                 }
 
                 game.SetState(GAMESTATE::PAUSE);
-                paddle1.reset();
-                paddle2.reset();
-
-                cout << "paddle1 score: " << paddle1.score << "\n";
-                cout << "paddle2 score: " << paddle2.score << "\n";
             }
 
             //paddle collision
-            if(CheckRectCollision(&paddle1.rect, &ball.rect)){
-                ball.rect.x = paddle1.rect.x + paddle1.rect.w;
+            if(CheckRectCollision(&paddle[0].rect, &ball.rect)){
+                ball.rect.x = paddle[0].rect.x + paddle[0].rect.w;
                 ball.velocity_x *= -1;
                 playerhitball = true;
                 hitcount++;
                 cout << "hitcount = " << hitcount << "\n";
             }
-            if(CheckRectCollision(&paddle2.rect, &ball.rect)){
-                ball.rect.x = paddle2.rect.x - ball.rect.w;
+            if(CheckRectCollision(&paddle[1].rect, &ball.rect)){
+                ball.rect.x = paddle[1].rect.x - ball.rect.w;
                 ball.velocity_x *= -1;
                 playerhitball = false;
                 hitcount++;
                 cout << "hitcount = " << hitcount << "\n";
             }
-
 
             //make the ball goes faster
             if(ball.velocity_x < 10){
@@ -285,8 +286,9 @@ int main(int argc, char *args[]){
                  }
             }
 
-            //computer movement
-            if(!player_vs_player){
+
+            //lord forgive me for the nested if
+            if(!player2){
 
                 //stop if computer successfully hit the ball
                 if(playerhitball){
@@ -295,25 +297,26 @@ int main(int argc, char *args[]){
                     if (ball.rect.x + ball.rect.w/2 > WINSIZE_HEIGHT/2){
 
                         //check if the ball is higher or lower
-                        if (ball.rect.y > paddle2.rect.y + paddle2.rect.h/2){
-                            paddle2.rect.y += paddle2.speed;
+                        if (ball.rect.y > paddle[1].rect.y + paddle[1].rect.h/2){
+                            paddle[1].rect.y += paddle[1].speed;
                         }
-                        if (ball.rect.y < paddle2.rect.y + paddle2.rect.h/2){
-                            paddle2.rect.y -= paddle2.speed;
+                        if (ball.rect.y < paddle[1].rect.y + paddle[1].rect.h/2){
+                            paddle[1].rect.y -= paddle[1].speed;
                         }
                     }
                 }
             }
 
-
             //cout << "point 6" << endl;
             
-            //draw
+            //draw things
             SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
             SDL_RenderClear(renderer);
 
-            paddle1.rend();
-            paddle2.rend();
+            for (int i = 0; i < 2; i++){
+                paddle[i].rend();
+            }
+
             ball.rend();
 
             //cout << "point 7" << endl;
