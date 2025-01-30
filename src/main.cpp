@@ -1,72 +1,23 @@
 #include <SDL.h>
+#include <SDL_ttf.h>
 #include <iostream>
-#include <unordered_set>
 
 #include "game.h"
 #include "paddle.h"
+#include "ball.h"
 
 const int WINSIZE_WIDTH = 800;
 const int WINSIZE_HEIGHT = 600;
 const int FPS = 60;
 const int FRAME_TIME = 1000/FPS;
+const SDL_Color WHITE = {255, 255, 255, 255};
 
 using std::cout, std::endl;
 
-class ball_class{
-    public:
-        SDL_Rect rect;
-        float velocity_x = 0;
-        float velocity_y = 0;
-        int speed = 6;
-        SDL_Renderer *renderer;
-        int ResetPosition_x = WINSIZE_WIDTH/2 - rect.w/2;
-        int ResetPosition_y = WINSIZE_HEIGHT/2 - rect.h/2;
-
-        ball_class(SDL_Renderer* renderer) : renderer(renderer){
-            rect.w = 10;
-            rect.h = 10;
-
-            ResetPosition_x = WINSIZE_WIDTH/2 - rect.w/2;
-            ResetPosition_y = WINSIZE_HEIGHT/2 - rect.h/2;
-
-            rect.y = ResetPosition_y;
-            rect.x = ResetPosition_x;
-        }
-
-        int CheckBorderCollision(){
-            if(rect.y + rect.h > WINSIZE_HEIGHT){
-                velocity_y *= -1;
-            }
-            if(rect.y < 0){
-                velocity_y *= -1;
-            }
-            if(rect.x + rect.h > WINSIZE_WIDTH){
-                //speed_x *= -1;
-                rect.x = ResetPosition_x;
-                rect.y = ResetPosition_y;
-                return 2;
-            }
-            if(rect.x < 0){
-                //speed_x *= -1;
-                rect.x = ResetPosition_x;
-                rect.y = ResetPosition_y;
-                return 1;
-            }
-
-            return 0;
-        }
-
-        void rend(){
-            if(SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255) != 0){
-                std::cout << SDL_GetError() << std::endl;
-            }
-            
-            if(SDL_RenderFillRect(renderer, &rect) != 0){
-                std::cout << SDL_GetError() << std::endl;
-            } 
-        }
-        
-
+struct score_struct{
+    SDL_Surface *surface;
+    SDL_Texture *texture;
+    SDL_Rect rect;
 };
 
 int main(int argc, char *args[]){
@@ -87,10 +38,33 @@ int main(int argc, char *args[]){
     //cout << "point 3" << endl;
 
     paddle paddle[2] = {renderer, renderer};
+
     paddle[0].rect.x = 20;
-    paddle[1].rect.x = (WINSIZE_WIDTH - paddle[2].rect.w) - 20;
+    paddle[1].rect.x = (WINSIZE_WIDTH - paddle[1].rect.w) - 20;
 
     ball_class ball(renderer);
+
+    TTF_Font *myfont = TTF_OpenFont("ariblk.ttf", 32);
+    if(myfont == NULL){
+        cout << "Error: " << SDL_GetError() << endl;
+        TTF_CloseFont(myfont);
+        return -1;
+    }
+
+    //i dont know how to create an array of the score object so i'll implement it later
+
+    score_struct score[2];
+    score[0].rect.x = 300;
+    score[0].rect.y = 0;
+    score[1].rect.x = 500;
+    score[1].rect.y = 0;
+
+    for(int i = 0; i < 2; i++){
+        score[i].surface = TTF_RenderText_Solid(myfont, "0", WHITE);
+        score[i].texture = SDL_CreateTextureFromSurface(renderer, score[i].surface);
+        score[i].rect.w = score[i].surface ->w;
+        score[i].rect.h = score[i].surface ->h;
+    }
 
     srand(time(NULL));
     bool playerhitball = false;
@@ -162,8 +136,13 @@ int main(int argc, char *args[]){
             for (int i = 0; i < 2; i++){
                 paddle[i].rend();
             }
+            
+            for (int i = 0; i < 2; i++){
+                SDL_RenderCopy(renderer, score[i].texture, NULL, &score[i].rect);
+            }
 
             ball.rend();
+
             // cout << ball.rect.x << " " << ball.rect.y << endl;
             SDL_RenderPresent(renderer);
             
@@ -239,31 +218,40 @@ int main(int argc, char *args[]){
 
             //check if score should be added
             int add_score = ball.CheckBorderCollision();
-            if(add_score){
-                if (add_score == 2){
+            switch(add_score){
+                case 1:
                     paddle[0].score++;
-                }
-                else if (add_score == 1){
+                    break;
+                case 2:
                     paddle[1].score++;
-                }
+                    break;
+            }
 
+            //reset paddle position, change game state, and update score texture if either win
+            if(add_score){
                 for (int i = 0; i < 2; i++){
                     paddle[i].reset();
-                    cout << "paddle" << i << " score: " << paddle[i].score << "\n";
-                }
+                    cout << "paddle" << i + 1 << " score: " << paddle[i].score << "\n";
 
+                    //update the score texture
+                    score[i].surface = TTF_RenderText_Solid(myfont, gm::itoc(paddle[i].score), WHITE);
+                    score[i].texture = SDL_CreateTextureFromSurface(renderer, score[i].surface);
+                    score[i].rect.w = score[i].surface ->w;
+                    score[i].rect.h = score[i].surface ->h;
+                }
+                
                 game.SetState(GAMESTATE::PAUSE);
             }
 
             //paddle collision
-            if(CheckRectCollision(&paddle[0].rect, &ball.rect)){
+            if(gm::CheckRectCollision(&paddle[0].rect, &ball.rect)){
                 ball.rect.x = paddle[0].rect.x + paddle[0].rect.w;
                 ball.velocity_x *= -1;
                 playerhitball = true;
                 hitcount++;
                 cout << "hitcount = " << hitcount << "\n";
             }
-            if(CheckRectCollision(&paddle[1].rect, &ball.rect)){
+            if(gm::CheckRectCollision(&paddle[1].rect, &ball.rect)){
                 ball.rect.x = paddle[1].rect.x - ball.rect.w;
                 ball.velocity_x *= -1;
                 playerhitball = false;
@@ -318,6 +306,10 @@ int main(int argc, char *args[]){
             }
 
             ball.rend();
+
+            for (int i = 0; i < 2; i++){
+                SDL_RenderCopy(renderer, score[i].texture, NULL, &score[i].rect);
+            }
 
             //cout << "point 7" << endl;
 

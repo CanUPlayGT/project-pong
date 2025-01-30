@@ -1,4 +1,8 @@
 #include <game.h>
+#include <SDL_ttf.h>
+
+#include <string>
+#include <sstream>
 
 Game::Game(SDL_Window **window, SDL_Renderer **renderer, int x, int y, int w, int h, Uint32 flags){
 	*window = SDL_CreateWindow("Window",  x,  y, w, h, flags);
@@ -40,7 +44,7 @@ Game::~Game(){
 }
 
 // returns 1 on collision
-int CheckRectCollision(SDL_Rect *Rect1, SDL_Rect *Rect2){
+int gm::CheckRectCollision(SDL_Rect *Rect1, SDL_Rect *Rect2){
     //i moved this function here so that i have reusable code
     //rect1
     int rect1_top = Rect1->y;
@@ -69,4 +73,14 @@ int CheckRectCollision(SDL_Rect *Rect1, SDL_Rect *Rect2){
 
     return 1;
 
+}
+
+const char* gm::itoc(int i){
+    std::stringstream convert;
+    std::string string;
+    if(!(convert << i)){
+        return NULL;
+    }
+    string = convert.str();
+    return string.c_str();
 }

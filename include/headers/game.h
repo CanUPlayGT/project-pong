@@ -1,7 +1,6 @@
 #pragma once
 
 #include <SDL.h>
-#include <SDL_ttf.h>
 #include <iostream>
 
 extern const int WINSIZE_WIDTH;
@@ -24,5 +23,8 @@ class Game{
     GAMESTATE _state;
 };
 
+//for code reusability
+namespace gm{
 int CheckRectCollision(SDL_Rect *Rect1, SDL_Rect *Rect2);
-
+const char* itoc(int i);
+}
