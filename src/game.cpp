@@ -45,7 +45,6 @@ Game::~Game(){
 
 // returns 1 on collision
 int gm::CheckRectCollision(SDL_Rect *Rect1, SDL_Rect *Rect2){
-    //i moved this function here so that i have reusable code
     //rect1
     int rect1_top = Rect1->y;
     int rect1_down = Rect1->y + Rect1->h;

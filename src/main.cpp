@@ -51,19 +51,20 @@ int main(int argc, char *args[]){
         return -1;
     }
 
-    //i dont know how to create an array of the score object so i'll implement it later
+    //create score texture for the first time
+    //this will be updated if the score changes
+
+    const int score_x_position[] = {300, 500};
 
     score_struct score[2];
-    score[0].rect.x = 300;
-    score[0].rect.y = 0;
-    score[1].rect.x = 500;
-    score[1].rect.y = 0;
+    for (int i = 0; i < 2; i++){
+        score[i].rect.y = 0;
 
-    for(int i = 0; i < 2; i++){
         score[i].surface = TTF_RenderText_Solid(myfont, "0", WHITE);
         score[i].texture = SDL_CreateTextureFromSurface(renderer, score[i].surface);
         score[i].rect.w = score[i].surface ->w;
         score[i].rect.h = score[i].surface ->h;
+        score[i].rect.x = score_x_position[i] - score[i].rect.w / 2;
     }
 
     srand(time(NULL));
@@ -238,6 +239,7 @@ int main(int argc, char *args[]){
                     score[i].texture = SDL_CreateTextureFromSurface(renderer, score[i].surface);
                     score[i].rect.w = score[i].surface ->w;
                     score[i].rect.h = score[i].surface ->h;
+                    score[i].rect.x = score_x_position[i] - score[i].rect.w / 2;
                 }
                 
                 game.SetState(GAMESTATE::PAUSE);
@@ -282,7 +284,7 @@ int main(int argc, char *args[]){
                 if(playerhitball){
 
                     //only move if the ball is on the right side of the screen
-                    if (ball.rect.x + ball.rect.w/2 > WINSIZE_HEIGHT/2){
+                    if (ball.rect.x + ball.rect.w >= WINSIZE_HEIGHT/2){
 
                         //check if the ball is higher or lower
                         if (ball.rect.y > paddle[1].rect.y + paddle[1].rect.h/2){
@@ -338,6 +340,7 @@ int main(int argc, char *args[]){
 TODO:
 1. add computer AI (DONE)
 2. make ball faster as time passes (DONE)
-3. track and display scores
-4. improve ball's bouncing logic (hard)
+3. track and display scores (DONE)
+4. add game over scene
+4. improve ball's bouncing logic 
 */

@@ -3,8 +3,8 @@
 #include <SDL.h>
 #include <iostream>
 
-extern const int WINSIZE_WIDTH;
-extern const int WINSIZE_HEIGHT;
+extern const int WINSIZE_WIDTH; 
+extern const int WINSIZE_HEIGHT; //this mean the variable is defined somewhere else 
 
 enum class GAMESTATE{PLAY, EXIT, PAUSE};
 
@@ -25,6 +25,10 @@ class Game{
 
 //for code reusability
 namespace gm{
-int CheckRectCollision(SDL_Rect *Rect1, SDL_Rect *Rect2);
-const char* itoc(int i);
+    //pretty self-explanatory
+    // \return 1 on collision
+    int CheckRectCollision(SDL_Rect *Rect1, SDL_Rect *Rect2);
+    //converts an integer to const char*
+    //i made this so i can pass converted int to TTF_RenderText()
+    const char* itoc(int i);
 }
