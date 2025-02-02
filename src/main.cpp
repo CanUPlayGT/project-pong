@@ -5,93 +5,214 @@
 #include "game.h"
 #include "paddle.h"
 #include "ball.h"
+#include "text.h"
+
+using std::cout, std::endl;
 
 const int WINSIZE_WIDTH = 800;
 const int WINSIZE_HEIGHT = 600;
 const int FPS = 60;
 const int FRAME_TIME = 1000/FPS;
+
 const SDL_Color WHITE = {255, 255, 255, 255};
-
-using std::cout, std::endl;
-
-struct score_struct{
-    SDL_Surface *surface;
-    SDL_Texture *texture;
-    SDL_Rect rect;
-};
 
 int main(int argc, char *args[]){
     SDL_Window *window;
 	SDL_Renderer *renderer;
 
-    //cout << "point 1" << endl;
+    // cout << "point 1" << endl;
 
 	Game game(
 		&window, &renderer, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
 		WINSIZE_WIDTH, WINSIZE_HEIGHT, SDL_WINDOW_SHOWN
 	);
 
-	//cout << "point 2" << endl;
+	// cout << "point 2" << endl;
 
 	game.initialize();
 
-    //cout << "point 3" << endl;
+    // cout << "point 3" << endl;
 
     paddle paddle[2] = {renderer, renderer};
 
+    //just explicitly set paddle position
     paddle[0].rect.x = 20;
     paddle[1].rect.x = (WINSIZE_WIDTH - paddle[1].rect.w) - 20;
 
     ball_class ball(renderer);
 
-    TTF_Font *myfont = TTF_OpenFont("ariblk.ttf", 32);
-    if(myfont == NULL){
+    // cout << "point 4" << endl;
+
+    TTF_Font *arial32 = TTF_OpenFont("ariblk.ttf", 32);
+    if(arial32 == NULL){
         cout << "Error: " << SDL_GetError() << endl;
-        TTF_CloseFont(myfont);
+        TTF_CloseFont(arial32);
+        return -1;
+    }
+    TTF_Font *arial64 = TTF_OpenFont("ariblk.ttf", 64);
+    if(arial32 == NULL){
+        cout << "Error: " << SDL_GetError() << endl;
+        TTF_CloseFont(arial64);
         return -1;
     }
 
-    //create score texture for the first time
+    // cout << "point 5" << endl;
+
+    //this is for displaying message on game over scene
+    LoadText win_message(renderer, arial64);
+    LoadText restart_message(renderer, arial32);
+
+    // cout << "point 6" << endl;
+
+    //create sdl_texture for score for the first time
     //this will be updated if the score changes
 
     const int score_x_position[] = {300, 500};
 
-    score_struct score[2];
-    for (int i = 0; i < 2; i++){
-        score[i].rect.y = 0;
+    LoadText score[2] = {
+        {renderer, arial32},
+        {renderer, arial32}
+    };
 
-        score[i].surface = TTF_RenderText_Solid(myfont, "0", WHITE);
-        score[i].texture = SDL_CreateTextureFromSurface(renderer, score[i].surface);
-        score[i].rect.w = score[i].surface ->w;
-        score[i].rect.h = score[i].surface ->h;
-        score[i].rect.x = score_x_position[i] - score[i].rect.w / 2;
+    for (int i = 0; i < 2; i++){
+        score[i].UpdateTexture("0", WHITE);
+        score[i].set_pos(score_x_position[i] - score[i].rect.w / 2, 0);
     }
 
+    // cout << "point 7" << endl;
+
     srand(time(NULL));
+    int winner = 0;
+    int hitcount = 0;
     bool playerhitball = false;
     bool player2 = false;
+
+    //if player 2 ever control the paddle 2 this will set to true until game over scene
+    //meanwhile player2 variable will get resetted after every game pause
+    bool player2_flag = false;
+
     bool running = true;
-    int hitcount = 0;
+
     //cout << "point 4" << endl;
 
     SDL_Event event;
-
-    /*
-    inside the main while loop there's 2 game state while loop, one for drawing pause scene and 
-    the other one is for gameplay scene, both scene must listen to input.
-    */
+    
+    //inside the main while loop there are multiple while loop for each game state, every scene should listen to input.
     while(running){
+
+        // cout << "point 8" << endl;
         
         if (game.GetState() == GAMESTATE::EXIT){
             running = false;
         }
 
+        while(game.GetState() == GAMESTATE::GAMEOVER){
 
+            //set the texts before going into the actual loop
+            if(player2_flag){
+                if (winner == 1)
+                {
+                    win_message.UpdateTexture("PLAYER 1 WIN!", WHITE);
+                    win_message.set_pos(WINSIZE_WIDTH/2 - win_message.rect.w / 2, 200);
+                }
+                else if (winner == 2)
+                {
+                    win_message.UpdateTexture("PLAYER 2 WIN!", WHITE);
+                    win_message.set_pos(WINSIZE_WIDTH/2 - win_message.rect.w / 2, 200);
+                }
+            }
+
+            else{
+                if (winner == 1)
+                {
+                    win_message.UpdateTexture("PLAYER 1 WIN!", WHITE);
+                    win_message.set_pos(WINSIZE_WIDTH/2 - win_message.rect.w / 2, 200);
+                }
+                else if (winner == 2)
+                {
+                    win_message.UpdateTexture("YOU LOSE!", WHITE);
+                    win_message.set_pos(WINSIZE_WIDTH/2 - win_message.rect.w / 2, 200);
+                }
+            }
+
+            restart_message.UpdateTexture("Press Space to Restart...", WHITE);
+            restart_message.set_pos(WINSIZE_WIDTH/2 - restart_message.rect.w / 2, 400);
+
+            //also render it once
+
+            SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
+            SDL_RenderClear(renderer);
+
+            win_message.rendcopy();
+            restart_message.rendcopy();
+
+            SDL_RenderPresent(renderer);
+
+            //keep listening for input
+            while(game.GetState() == GAMESTATE::GAMEOVER){
+                SDL_WaitEvent(&event);
+                if(event.type == SDL_QUIT){
+                    std:: cout << "\ngame loop set false\n";
+                    game.SetState(GAMESTATE::EXIT);
+                }
+                else if (event.type == SDL_KEYDOWN){
+                    switch(event.key.keysym.sym){
+                        case SDLK_SPACE:
+
+                            game.SetState(GAMESTATE::PAUSE);
+
+                            //reset some things
+                            winner = 0;
+                            player2_flag = false;
+                            paddle[0].score = 0;
+                            paddle[1].score = 0;
+
+                            //reset score texture
+                            for (int i = 0; i < 2; i++){
+                            score[i].UpdateTexture("0", WHITE);
+                            score[i].set_pos(score_x_position[i] - score[i].rect.w / 2, 0);
+                            }
+
+                            break;
+                    }
+                }
+            }
+
+            //gameover end loop
+        }
+        
         //draw game state pause
         while(game.GetState() == GAMESTATE::PAUSE){
+            // cout << "point 9" << endl;
 
-            // cout << "gamestate = pause" << endl;
-            while(SDL_PollEvent(&event)){
+            //reset player 2
+            player2 = false;
+            //computer should move if the ball goes right first
+            playerhitball = true;
+            hitcount = 0;
+
+            //render things once
+            SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
+            SDL_RenderClear(renderer);
+
+            for (int i = 0; i < 2; i++){
+                paddle[i].rend();
+                score[i].rendcopy();
+
+                paddle[i].move_down = false;
+                paddle[i].move_up = false;
+            }
+
+            ball.rend();
+
+            // cout << ball.rect.x << " " << ball.rect.y << endl;
+            SDL_RenderPresent(renderer);
+
+            SDL_Delay(500); //prevent accidentally continuing after entering game pause
+
+            while(game.GetState() == GAMESTATE::PAUSE){
+
+                SDL_WaitEvent(&event);
                 if(event.type == SDL_QUIT){
                     std::cout << "\ngame loop set false";
                     game.SetState(GAMESTATE::EXIT);
@@ -104,7 +225,7 @@ int main(int argc, char *args[]){
                             game.SetState(GAMESTATE::PLAY);
                             break;
                         case SDLK_d :
-                             paddle[0].move_down = true;
+                            paddle[0].move_down = true;
                             // cout << "paddle1 move down set true";
                             game.SetState(GAMESTATE::PLAY);
                             break;
@@ -118,36 +239,17 @@ int main(int argc, char *args[]){
                             game.SetState(GAMESTATE::PLAY);
                             break;
                         case SDLK_d :
-                             paddle[0].move_down = false;
+                            paddle[0].move_down = false;
                             // cout << "paddle1 move down set true";
                             game.SetState(GAMESTATE::PLAY);
                             break;
                     }
                 }
             }
-            //reset player 2
-            player2 = false;
-            //computer should move if the ball goes right first
-            playerhitball = true;
-            hitcount = 0;
 
-            SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
-            SDL_RenderClear(renderer);
-
-            for (int i = 0; i < 2; i++){
-                paddle[i].rend();
-            }
-            
-            for (int i = 0; i < 2; i++){
-                SDL_RenderCopy(renderer, score[i].texture, NULL, &score[i].rect);
-            }
-
-            ball.rend();
-
-            // cout << ball.rect.x << " " << ball.rect.y << endl;
-            SDL_RenderPresent(renderer);
-            
+                //the end loop of game state pause 
         }
+
 
         //cout << "point 5" << endl;
         ball.velocity_x = ball.speed * (rand() % 2 == 0 ? 1 : -1);
@@ -208,6 +310,7 @@ int main(int argc, char *args[]){
 
             if (paddle[1].move_down == true || paddle[1].move_down == true){
                 player2 = true;
+                player2_flag = true;
             }
 
             for (int i = 0; i < 2; i++){
@@ -221,7 +324,7 @@ int main(int argc, char *args[]){
             int add_score = ball.CheckBorderCollision();
             switch(add_score){
                 case 1:
-                    paddle[0].score++;
+                    paddle[0].score += 5;
                     break;
                 case 2:
                     paddle[1].score++;
@@ -231,18 +334,24 @@ int main(int argc, char *args[]){
             //reset paddle position, change game state, and update score texture if either win
             if(add_score){
                 for (int i = 0; i < 2; i++){
+                    if(paddle[0].score == 10){
+                        winner = 1;
+                        game.SetState(GAMESTATE::GAMEOVER);
+                    }
+                    else if(paddle[1].score == 10){
+                        winner = 2;
+                        game.SetState(GAMESTATE::GAMEOVER);
+                    }
+                    else{
+                        game.SetState(GAMESTATE::PAUSE);
+                    }
+
                     paddle[i].reset();
                     cout << "paddle" << i + 1 << " score: " << paddle[i].score << "\n";
 
                     //update the score texture
-                    score[i].surface = TTF_RenderText_Solid(myfont, gm::itoc(paddle[i].score), WHITE);
-                    score[i].texture = SDL_CreateTextureFromSurface(renderer, score[i].surface);
-                    score[i].rect.w = score[i].surface ->w;
-                    score[i].rect.h = score[i].surface ->h;
-                    score[i].rect.x = score_x_position[i] - score[i].rect.w / 2;
+                    score[i].UpdateTexture(gm::itoc(paddle[i].score), WHITE);
                 }
-                
-                game.SetState(GAMESTATE::PAUSE);
             }
 
             //paddle collision
@@ -270,8 +379,8 @@ int main(int argc, char *args[]){
 
                     /*because we were working with velocity so i can't just add it by a number because the 
                     velocity could be a negative so it could be more slower e.g (-6 + 2) so i made a workaround*/
-                    ball.velocity_x += ball.velocity_x * 0.05;
-                    ball.velocity_y += ball.velocity_x * 0.05;
+                    ball.velocity_x += ball.velocity_x * 0.15;
+                    ball.velocity_y += ball.velocity_x * 0.15;
                     cout << "ball velocity: " << ball.velocity_x << endl;
                  }
             }
@@ -310,7 +419,7 @@ int main(int argc, char *args[]){
             ball.rend();
 
             for (int i = 0; i < 2; i++){
-                SDL_RenderCopy(renderer, score[i].texture, NULL, &score[i].rect);
+                score[i].rendcopy();
             }
 
             //cout << "point 7" << endl;
@@ -342,5 +451,5 @@ TODO:
 2. make ball faster as time passes (DONE)
 3. track and display scores (DONE)
 4. add game over scene
-4. improve ball's bouncing logic 
+4. improve ball bouncing logic 
 */

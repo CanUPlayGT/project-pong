@@ -6,7 +6,7 @@
 extern const int WINSIZE_WIDTH; 
 extern const int WINSIZE_HEIGHT; //this mean the variable is defined somewhere else 
 
-enum class GAMESTATE{PLAY, EXIT, PAUSE};
+enum class GAMESTATE{PLAY, EXIT, PAUSE, GAMEOVER};
 
 class Game{
     public:
