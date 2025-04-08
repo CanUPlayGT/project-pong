@@ -3,6 +3,6 @@ lib
 .vscode
 pong.exe
 include/SDL2_ttf
-"why i dont understand.png"
+why i dont understand.png
 SDL2.dll
 SDL2_ttf.dll
