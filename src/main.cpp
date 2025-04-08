@@ -64,7 +64,7 @@ int main(int argc, char *args[]){
 
     // cout << "point 6" << endl;
 
-    //create sdl_texture for score for the first time
+    //create sdl_texture for displaying score
     //this will be updated if the score changes
 
     const int score_x_position[] = {300, 500};
@@ -108,7 +108,7 @@ int main(int argc, char *args[]){
 
         while(game.GetState() == GAMESTATE::GAMEOVER){
 
-            //set the texts before going into the actual loop
+            //update the text based on the winner
             if(player2_flag){
                 if (winner == 1)
                 {
@@ -138,7 +138,7 @@ int main(int argc, char *args[]){
             restart_message.UpdateTexture("Press Space to Restart...", WHITE);
             restart_message.set_pos(WINSIZE_WIDTH/2 - restart_message.rect.w / 2, 400);
 
-            //also render it once
+            //only render it 1 time
 
             SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
             SDL_RenderClear(renderer);
@@ -150,6 +150,7 @@ int main(int argc, char *args[]){
 
             //keep listening for input
             while(game.GetState() == GAMESTATE::GAMEOVER){
+                //SDL_WaitEvent helps to make cpu usage 0% when waiting for input
                 SDL_WaitEvent(&event);
                 if(event.type == SDL_QUIT){
                     std:: cout << "\ngame loop set false\n";
@@ -211,7 +212,6 @@ int main(int argc, char *args[]){
             SDL_Delay(500); //prevent accidentally continuing after entering game pause
 
             while(game.GetState() == GAMESTATE::PAUSE){
-
                 SDL_WaitEvent(&event);
                 if(event.type == SDL_QUIT){
                     std::cout << "\ngame loop set false";
@@ -324,7 +324,7 @@ int main(int argc, char *args[]){
             int add_score = ball.CheckBorderCollision();
             switch(add_score){
                 case 1:
-                    paddle[0].score += 5;
+                    paddle[0].score++;
                     break;
                 case 2:
                     paddle[1].score++;
@@ -334,11 +334,11 @@ int main(int argc, char *args[]){
             //reset paddle position, change game state, and update score texture if either win
             if(add_score){
                 for (int i = 0; i < 2; i++){
-                    if(paddle[0].score == 10){
+                    if(paddle[0].score == 5){
                         winner = 1;
                         game.SetState(GAMESTATE::GAMEOVER);
                     }
-                    else if(paddle[1].score == 10){
+                    else if(paddle[1].score == 5){
                         winner = 2;
                         game.SetState(GAMESTATE::GAMEOVER);
                     }
@@ -350,7 +350,7 @@ int main(int argc, char *args[]){
                     cout << "paddle" << i + 1 << " score: " << paddle[i].score << "\n";
 
                     //update the score texture
-                    score[i].UpdateTexture(gm::itoc(paddle[i].score), WHITE);
+                    score[i].UpdateTexture(gm::itoccp(paddle[i].score), WHITE);
                 }
             }
 
@@ -379,21 +379,21 @@ int main(int argc, char *args[]){
 
                     /*because we were working with velocity so i can't just add it by a number because the 
                     velocity could be a negative so it could be more slower e.g (-6 + 2) so i made a workaround*/
-                    ball.velocity_x += ball.velocity_x * 0.15;
-                    ball.velocity_y += ball.velocity_x * 0.15;
+                    ball.velocity_x += ball.velocity_x * 0.05;
+                    ball.velocity_y += ball.velocity_x * 0.05;
                     cout << "ball velocity: " << ball.velocity_x << endl;
                  }
             }
 
 
-            //lord forgive me for the nested if
+            //computer movement logic
             if(!player2){
 
                 //stop if computer successfully hit the ball
                 if(playerhitball){
 
                     //only move if the ball is on the right side of the screen
-                    if (ball.rect.x + ball.rect.w >= WINSIZE_HEIGHT/2){
+                    if (ball.rect.x >= WINSIZE_HEIGHT/2){
 
                         //check if the ball is higher or lower
                         if (ball.rect.y > paddle[1].rect.y + paddle[1].rect.h/2){
@@ -450,6 +450,7 @@ TODO:
 1. add computer AI (DONE)
 2. make ball faster as time passes (DONE)
 3. track and display scores (DONE)
-4. add game over scene
+4. add game over scene (DONE)
 4. improve ball bouncing logic 
+5. fix assertion failure error when exiting program (i have no idea what it is)
 */

@@ -30,5 +30,5 @@ namespace gm{
     int CheckRectCollision(SDL_Rect *Rect1, SDL_Rect *Rect2);
     //converts an integer to const char*
     //i made this so i can pass converted int to TTF_RenderText()
-    const char* itoc(int i);
+    const char* itoccp(int i);
 }

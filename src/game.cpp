@@ -74,7 +74,7 @@ int gm::CheckRectCollision(SDL_Rect *Rect1, SDL_Rect *Rect2){
 
 }
 
-const char* gm::itoc(int i){
+const char* gm::itoccp(int i){
     std::stringstream convert;
     std::string string;
     if(!(convert << i)){
